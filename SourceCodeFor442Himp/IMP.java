@@ -32,7 +32,7 @@ class IMP implements MouseListener{
     int picture[][];
 
     /* 
-     * In the Constructor I set up the GUI, the frame the menus. The open pulldown 
+     * In the Constructor I set up the GUI, the frame the menus. The open pull down
      * menu is how you will open an image to manipulate. 
      */
    IMP()
@@ -86,7 +86,7 @@ class IMP implements MouseListener{
    }
    
    /* 
-    * This method creates the pulldown menu and sets up listeners to selection of the menu choices. If the listeners are activated they call the methods 
+    * This method creates the pull down menu and sets up listeners to selection of the menu choices. If the listeners are activated they call the methods
     * for handling the choice, fun1, fun2, fun3, fun4, etc. etc. 
     */
    
@@ -100,9 +100,16 @@ class IMP implements MouseListener{
             @Override
           public void actionPerformed(ActionEvent evt){fun1();}
            });
-   
+
+      JMenuItem Test = new JMenuItem("Test");
+
+      Test.addActionListener(new ActionListener(){
+          @Override
+          public void actionPerformed(ActionEvent evt){rotate_90();}
+      });
        
       fun.add(firstItem);
+      fun.add(Test);
      
       return fun;   
 
@@ -189,16 +196,17 @@ class IMP implements MouseListener{
    */
   private void resetPicture()
   {
-       for(int i=0; i<height; i++)
-       for(int j=0; j<width; j++)
-          pixels[i*width+j] = picture[i][j];
-      Image img2 = toolkit.createImage(new MemoryImageSource(width, height, pixels, 0, width)); 
+       for(int i=0; i<height; i++) {
+           for (int j = 0; j < width; j++)
+               pixels[i * width + j] = picture[i][j];
+           Image img2 = toolkit.createImage(new MemoryImageSource(width, height, pixels, 0, width));
 
-      JLabel label2 = new JLabel(new ImageIcon(img2));    
-       mp.removeAll();
-       mp.add(label2);
-     
-       mp.revalidate(); 
+           JLabel label2 = new JLabel(new ImageIcon(img2));
+           mp.removeAll();
+           mp.add(label2);
+
+           mp.revalidate();
+       }
    
     }
     /*
@@ -233,36 +241,78 @@ class IMP implements MouseListener{
   
   /**************************************************************************************************
    * This is where you will put your methods. Every method below is called when the corresponding pulldown menu is 
-   * used. As long as you have a picture open first the when your fun1, fun2, fun....etc method is called you will 
+   * used. As long as you have a picture open first then when your fun1, fun2, fun....etc method is called you will
    * have a 2D array called picture that is holding each pixel from your picture. 
    *************************************************************************************************/
    /*
     * Example function that just removes all red values from the picture. 
     * Each pixel value in picture[i][j] holds an integer value. You need to send that pixel to getPixelArray the method which will return a 4 element array 
     * that holds A,R,G,B values. Ignore [0], that's the Alpha channel which is transparency, we won't be using that, but you can on your own.
-    * getPixelArray will breaks down your single int to 4 ints so you can manipulate the values for each level of R, G, B. 
+    * getPixelArray will breaks down your single int to 4 ints, so you can manipulate the values for each level of R, G, B.
     * After you make changes and do your calculations to your pixel values the getPixels method will put the 4 values in your ARGB array back into a single
-    * integer value so you can give it back to the program and display the new picture. 
+    * integer value, so you can give it back to the program and display the new picture.
     */
   private void fun1()
   {
      
-    for(int i=0; i<height; i++)
-       for(int j=0; j<width; j++)
+    for(int row=0; row<height; row++)
+       for(int column=0; column<width; column++)
        {   
           int rgbArray[] = new int[4];
          
           //get three ints for R, G and B
-          rgbArray = getPixelArray(picture[i][j]);
+          rgbArray = getPixelArray(picture[row][column]);
          
         
            rgbArray[1] = 0;
            //take three ints for R, G, B and put them back into a single int
-           picture[i][j] = getPixels(rgbArray);
+           picture[row][column] = getPixels(rgbArray);
         } 
      resetPicture();
   }
-  
+
+
+  private void rotate_90()
+  {
+
+      int[][] rotatedPic = new int[3][3];
+      int[][] picture_test = new int[][]{{1, 2, 3},{4,5,6},{7,8,9}};
+
+
+      System.out.println("Start Matrix");
+      for(int i=0;i<3;i++) {
+          for(int j=0;j<3;j++) {
+              System.out.print(picture_test[i][j]);
+              rotatedPic[i][j] = picture_test[j][i];
+          }
+          System.out.println();
+
+//          for (int row = 0; row < 3; row++) {
+//              rotatedPic[i][row] = rotatedPic[i][(3-1)-row];
+//              System.out.print(rotatedPic[i][row]);
+//          }
+//          System.out.println();
+      }
+      System.out.println("End Matrix");
+      for(int i=0;i<3;i++) {
+          int start = 0;
+          int end = rotatedPic[i].length - 1;
+          while(start < end) {
+            int temp = rotatedPic[i][start];
+              rotatedPic[i][start] = rotatedPic[i][end];
+              rotatedPic[i][end] = temp;
+              start++;
+              end--;
+          }
+
+          for (int j = 0; j < 3; j++) {
+              System.out.print(rotatedPic[i][j]);
+          }
+          System.out.println();
+      }
+
+      resetPicture();
+  }
 
   
   
