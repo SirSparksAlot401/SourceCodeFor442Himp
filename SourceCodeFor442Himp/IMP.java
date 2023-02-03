@@ -189,14 +189,16 @@ class IMP implements MouseListener{
        mp.removeAll();
        mp.add(label2);
      
-       mp.revalidate(); 
+       mp.revalidate();
+
+       resetPicture();
     }
   /*
    * This method is called to redraw the screen with the new image. 
    */
   private void resetPicture()
   {
-       for(int i=0; i<height; i++) {
+       for(int i=0; i<height; i++)
            for (int j = 0; j < width; j++)
                pixels[i * width + j] = picture[i][j];
            Image img2 = toolkit.createImage(new MemoryImageSource(width, height, pixels, 0, width));
@@ -206,8 +208,6 @@ class IMP implements MouseListener{
            mp.add(label2);
 
            mp.revalidate();
-       }
-   
     }
     /*
      * This method takes a single integer value and breaks it down doing bit manipulation to 4 individual int values for A, R, G, and B values
@@ -274,27 +274,16 @@ class IMP implements MouseListener{
 
   private void rotate_90()
   {
+      int[][] rotatedPic = new int[width][height];
 
-      int[][] rotatedPic = new int[3][3];
-      int[][] picture_test = new int[][]{{1, 2, 3},{4,5,6},{7,8,9}};
-
-
-      System.out.println("Start Matrix");
-      for(int i=0;i<3;i++) {
-          for(int j=0;j<3;j++) {
-              System.out.print(picture_test[i][j]);
-              rotatedPic[i][j] = picture_test[j][i];
+      for(int i=0;i<width;i++) {
+          for(int j=0;j<height;j++) {
+              rotatedPic[i][j] = picture[j][i];
           }
-          System.out.println();
 
-//          for (int row = 0; row < 3; row++) {
-//              rotatedPic[i][row] = rotatedPic[i][(3-1)-row];
-//              System.out.print(rotatedPic[i][row]);
-//          }
-//          System.out.println();
       }
-      System.out.println("End Matrix");
-      for(int i=0;i<3;i++) {
+
+      for(int i=0;i<width;i++) {
           int start = 0;
           int end = rotatedPic[i].length - 1;
           while(start < end) {
@@ -304,12 +293,11 @@ class IMP implements MouseListener{
               start++;
               end--;
           }
-
-          for (int j = 0; j < 3; j++) {
-              System.out.print(rotatedPic[i][j]);
-          }
-          System.out.println();
       }
+      picture = rotatedPic;
+      int temp = width;
+      width = height;
+      height = temp;
 
       resetPicture();
   }
