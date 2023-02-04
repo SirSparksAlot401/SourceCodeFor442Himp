@@ -282,36 +282,41 @@ class IMP implements MouseListener{
 
   private void rotate_90()
   {
+      //Turn old image black.
+      int[][] coveredImage = picture.clone();
+      picture = new int[height][width];
+      resetPicture();
+      picture = coveredImage.clone();
+
+      //Rotate image
       int[][] rotatedPic = new int[width][height];
 
       for(int i=0;i<width;i++) {
           for(int j=0;j<height;j++) {
               rotatedPic[i][j] = picture[j][i];
           }
-
       }
 
       for(int i=0;i<width;i++) {
           int start = 0;
           int end = rotatedPic[i].length - 1;
           while(start < end) {
-            int temp = rotatedPic[i][start];
+              int temp = rotatedPic[i][start];
               rotatedPic[i][start] = rotatedPic[i][end];
               rotatedPic[i][end] = temp;
               start++;
               end--;
           }
       }
+
       picture = rotatedPic;
       int temp = width;
       width = height;
       height = temp;
-
       resetPicture();
   }
 
   private void grayscale(){
-      System.out.println(picture[25][25]);
       int[] rgbArray;
 
       for(int col=0; col<height; col++) {
