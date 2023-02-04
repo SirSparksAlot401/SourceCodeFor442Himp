@@ -101,15 +101,23 @@ class IMP implements MouseListener{
           public void actionPerformed(ActionEvent evt){fun1();}
            });
 
-      JMenuItem Test = new JMenuItem("Test");
+      JMenuItem Rotate = new JMenuItem("Rotate");
 
-      Test.addActionListener(new ActionListener(){
+      Rotate.addActionListener(new ActionListener(){
           @Override
           public void actionPerformed(ActionEvent evt){rotate_90();}
       });
+
+      JMenuItem GrayScale = new JMenuItem("Grayscale");
+
+      GrayScale.addActionListener(new ActionListener(){
+          @Override
+          public void actionPerformed(ActionEvent evt){grayscale();}
+      });
        
       fun.add(firstItem);
-      fun.add(Test);
+      fun.add(Rotate);
+      fun.add(GrayScale);
      
       return fun;   
 
@@ -302,7 +310,25 @@ class IMP implements MouseListener{
       resetPicture();
   }
 
-  
+  private void grayscale(){
+      System.out.println(picture[25][25]);
+      int[] rgbArray;
+
+      for(int col=0; col<height; col++) {
+          for (int row = 0; row < width; row++) {
+              //get three ints for R, G and B
+              rgbArray = getPixelArray(picture[col][row]);
+              int gray = (int) ((rgbArray[1]*0.2126) + (rgbArray[2]*0.7152) + (rgbArray[3]*0.0722));
+              rgbArray[1] = gray;
+              rgbArray[2] = gray;
+              rgbArray[3] = gray;
+
+              //take three ints for R, G, B and put them back into a single int
+              picture[col][row] = getPixels(rgbArray);
+          }
+      }
+      resetPicture();
+  }
   
   private void quit()
   {  
