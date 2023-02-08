@@ -11,11 +11,13 @@ int startX, flag, startY, endX, endY;
 
     BufferedImage grid;
     Graphics2D gc;
+    int [] color_array;
 
 	public MyPanel(int[] color_array)
 	{
 	   startX = startY = 0;
            endX = endY = 100;
+           this.color_array = color_array;
  	}
 
      public void clear()
@@ -38,9 +40,10 @@ int startX, flag, startY, endX, endY;
      }
     public void drawing()
     {
-        
-        gc.drawLine(startX, startY, endX, endY);
+        for (int i = 0; i < 256; i++) {
+            gc.drawLine(i, 600, i, 550-color_array[i]);
+            repaint();
+        }
         repaint();
     }
-   
 }

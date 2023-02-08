@@ -29,6 +29,13 @@ class IMP implements MouseListener{
    int height=0, width=0;
    int firstWidth;
    int firstHeight;
+    int [] red = new int[256];
+    int [] green = new int[256];
+    int [] blue = new int[256];
+    MyPanel redPanel;
+    MyPanel bluePanel;
+    MyPanel greenPanel;
+
    
    //your 2D array of pixels
     int picture[][];
@@ -79,7 +86,7 @@ class IMP implements MouseListener{
       start.setEnabled(false);
       start.addActionListener(new ActionListener(){
             @Override
-          public void actionPerformed(ActionEvent evt){ fun1(); }
+          public void actionPerformed(ActionEvent evt){ redPanel.drawing(); greenPanel.drawing(); bluePanel.drawing(); }
            });
       butPanel.add(start);
       frame.getContentPane().add(butPanel, BorderLayout.SOUTH);
@@ -430,7 +437,7 @@ class IMP implements MouseListener{
   private int[][] fiveByFiveMask(){
       int[][] maskedImage = new int[height][width];
       int[] rgbArray = new int[4];
-      grayscale();
+      blur();
       for (int row = 2; row < height-2; row++) {
           for (int column = 2; column < width - 2; column++) {
               int total = 0;
@@ -459,7 +466,7 @@ class IMP implements MouseListener{
               rgbArray = getPixelArray(picture[row][column]);
               total += 16 * rgbArray[1];
 
-              if(total > 1500){
+              if(total > 750){
                   rgbArray = getPixelArray(picture[row][column]);
                   for (int i = 0; i < 4; i++) {
                       rgbArray[i] = 255;
@@ -480,21 +487,54 @@ class IMP implements MouseListener{
 
 
   private void histogram() {
-      int [] red = new int[255];
+      //This is in my histogram function in IMP
+
+//first count all pixel values in R and G and B array
+
+// Then pass those arrays to MyPanel constructor
+
+//Then when button is pushed call drawHistogram in MyPanel.....you write DrawHistogram
+
+      JFrame redFrame = new JFrame("Red");
+      redFrame.setSize(305, 600);
+      redFrame.setLocation(800, 0);
+      JFrame greenFrame = new JFrame("Green");
+      greenFrame.setSize(305, 600);
+      greenFrame.setLocation(1150, 0);
+      JFrame blueFrame = new JFrame("blue");
+      blueFrame.setSize(305, 600);
+      blueFrame.setLocation(1450, 0);
+      redPanel = new MyPanel(red);
+      greenPanel = new MyPanel(green);
+      bluePanel = new MyPanel(blue);
+      redFrame.getContentPane().add(redPanel, BorderLayout.CENTER);
+      redFrame.setVisible(true);
+      greenFrame.getContentPane().add(greenPanel, BorderLayout.CENTER);
+      greenFrame.setVisible(true);
+      blueFrame.getContentPane().add(bluePanel, BorderLayout.CENTER);
+      blueFrame.setVisible(true);
+      start.setEnabled(true);
+      colorFrequencys();
+      //My panel class stuff that inherits from JPanel:
+
+
+  }
+
+
+  private void colorFrequencys(){
+
       //red array = getHistogram
 
 
-      JFrame hist = new JFrame();
-      hist.setLayout(new BorderLayout(0,0));
-      hist.setSize(900, 300);
-
-      MyPanel redPanel = new MyPanel(red);
-      redPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-      redPanel.setOpaque(true);
-      redPanel.setPreferredSize(new Dimension(300,300));
-      hist.add(redPanel, BorderLayout.WEST);
-
-      hist.setVisible(true);
+      int[] rgbArray = new int[4];
+      for (int row = 0; row < height; row++) {
+          for (int column = 0; column < width; column++) {
+              rgbArray = getPixelArray(picture[row][column]);
+              red[rgbArray[1]]++;
+              green[rgbArray[2]]++;
+              blue[rgbArray[3]]++;
+          }
+      }
   }
 
   private void quit()
