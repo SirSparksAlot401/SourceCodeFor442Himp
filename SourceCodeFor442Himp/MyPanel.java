@@ -12,7 +12,7 @@ int startX, flag, startY, endX, endY;
     BufferedImage grid;
     Graphics2D gc;
 
-	public MyPanel()
+	public MyPanel(int[] color_array)
 	{
 	   startX = startY = 0;
            endX = endY = 100;

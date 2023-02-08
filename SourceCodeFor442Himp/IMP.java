@@ -114,11 +114,19 @@ class IMP implements MouseListener{
           @Override
           public void actionPerformed(ActionEvent evt){grayscale();}
       });
+
+      JMenuItem Blur = new JMenuItem("Blur");
+
+      Blur.addActionListener(new ActionListener(){
+          @Override
+          public void actionPerformed(ActionEvent evt){blur();}
+      });
        
       fun.add(firstItem);
       fun.add(Rotate);
       fun.add(GrayScale);
-     
+      fun.add(Blur);
+
       return fun;   
 
   }
@@ -196,7 +204,6 @@ class IMP implements MouseListener{
       JLabel label2 = new JLabel(new ImageIcon(img2));    
        mp.removeAll();
        mp.add(label2);
-     
        mp.revalidate();
 
        resetPicture();
@@ -285,6 +292,7 @@ class IMP implements MouseListener{
       //Turn old image black.
       int[][] coveredImage = picture.clone();
       picture = new int[height][width];
+      //TODO: this is not forcing the frame to refresh
       resetPicture();
       picture = coveredImage.clone();
 
@@ -316,7 +324,8 @@ class IMP implements MouseListener{
       resetPicture();
   }
 
-  private void grayscale(){
+  private void grayscale()
+  {
       int[] rgbArray;
 
       for(int col=0; col<height; col++) {
@@ -332,6 +341,48 @@ class IMP implements MouseListener{
               picture[col][row] = getPixels(rgbArray);
           }
       }
+      resetPicture();
+  }
+
+  private void blur()
+  {
+      //grayscale();
+      int[][] blurredImage = new int[height][width];
+      int[] rgbArray = new int[4];
+
+      for (int row = 1; row < height-1; row++) {
+          for (int column = 1; column < width-1; column++) {
+              int[] total = new int[4];
+              for (int i = -1; i < 2; i++) {
+                  for (int j = 1; j < 4; j++) {
+                      rgbArray = getPixelArray(picture[row+i][column-1]);
+                      total[1] += rgbArray[1];
+                      total[2] += rgbArray[2];
+                      total[3] += rgbArray[3];
+
+                  }
+                  for (int j = 1; j < 4; j++) {
+                      rgbArray = getPixelArray(picture[row][column+i]);
+                      total[1] += rgbArray[1];
+                      total[2] += rgbArray[2];
+                      total[3] += rgbArray[3];
+
+                  }
+                  for (int j = 1; j < 4; j++) {
+                      rgbArray = getPixelArray(picture[row-1][column+1]);
+                      total[1] += rgbArray[1];
+                      total[2] += rgbArray[2];
+                      total[3] += rgbArray[3];
+
+                  }
+                  total[1] /= 8;
+                  total[2] /= 8;
+                  total[3] /= 8;
+                  blurredImage[row][column] = getPixels(total);
+              }
+          }
+      }
+      picture = blurredImage;
       resetPicture();
   }
   
