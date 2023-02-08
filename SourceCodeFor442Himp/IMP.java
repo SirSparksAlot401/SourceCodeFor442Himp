@@ -27,6 +27,8 @@ class IMP implements MouseListener{
    
    //This will be your height and width of your 2d array
    int height=0, width=0;
+   int firstWidth;
+   int firstHeight;
    
    //your 2D array of pixels
     int picture[][];
@@ -121,11 +123,28 @@ class IMP implements MouseListener{
           @Override
           public void actionPerformed(ActionEvent evt){blur();}
       });
+
+      JMenuItem FiveByFive = new JMenuItem("5x5");
+
+      FiveByFive.addActionListener(new ActionListener(){
+          @Override
+          public void actionPerformed(ActionEvent evt){fiveByFiveMask();}
+      });
+
+      JMenuItem Histogram = new JMenuItem("Histogram");
+
+      Histogram.addActionListener(new ActionListener(){
+          @Override
+          public void actionPerformed(ActionEvent evt){histogram();}
+      });
+
        
       fun.add(firstItem);
       fun.add(Rotate);
       fun.add(GrayScale);
       fun.add(Blur);
+      fun.add(FiveByFive);
+      fun.add(Histogram);
 
       return fun;   
 
@@ -151,7 +170,9 @@ class IMP implements MouseListener{
        img = new ImageIcon(pic.getPath());
       }
      width = img.getIconWidth();
-     height = img.getIconHeight(); 
+     height = img.getIconHeight();
+     firstHeight = height;
+     firstWidth = width;
      
      JLabel label = new JLabel(img);
      label.addMouseListener(this);
@@ -205,8 +226,10 @@ class IMP implements MouseListener{
        mp.removeAll();
        mp.add(label2);
        mp.revalidate();
+       width = firstWidth;
+       height = firstHeight;
+       turnTwoDimensional();
 
-       resetPicture();
     }
   /*
    * This method is called to redraw the screen with the new image. 
@@ -223,6 +246,7 @@ class IMP implements MouseListener{
            mp.add(label2);
 
            mp.revalidate();
+           mp.repaint();
     }
     /*
      * This method takes a single integer value and breaks it down doing bit manipulation to 4 individual int values for A, R, G, and B values
@@ -292,7 +316,6 @@ class IMP implements MouseListener{
       //Turn old image black.
       int[][] coveredImage = picture.clone();
       picture = new int[height][width];
-      //TODO: this is not forcing the frame to refresh
       resetPicture();
       picture = coveredImage.clone();
 
@@ -346,46 +369,134 @@ class IMP implements MouseListener{
 
   private void blur()
   {
-      //grayscale();
+      grayscale();
       int[][] blurredImage = new int[height][width];
       int[] rgbArray = new int[4];
 
       for (int row = 1; row < height-1; row++) {
           for (int column = 1; column < width-1; column++) {
               int[] total = new int[4];
-              for (int i = -1; i < 2; i++) {
-                  for (int j = 1; j < 4; j++) {
-                      rgbArray = getPixelArray(picture[row+i][column-1]);
-                      total[1] += rgbArray[1];
-                      total[2] += rgbArray[2];
-                      total[3] += rgbArray[3];
+              total[0] = 255;
+              rgbArray = getPixelArray(picture[row-1][column-1]);
+              total[1] += rgbArray[1];
+              total[2] += rgbArray[2];
+              total[3] += rgbArray[3];
 
-                  }
-                  for (int j = 1; j < 4; j++) {
-                      rgbArray = getPixelArray(picture[row][column+i]);
-                      total[1] += rgbArray[1];
-                      total[2] += rgbArray[2];
-                      total[3] += rgbArray[3];
+              rgbArray = getPixelArray(picture[row-1][column]);
+              total[1] += rgbArray[1];
+              total[2] += rgbArray[2];
+              total[3] += rgbArray[3];
 
-                  }
-                  for (int j = 1; j < 4; j++) {
-                      rgbArray = getPixelArray(picture[row-1][column+1]);
-                      total[1] += rgbArray[1];
-                      total[2] += rgbArray[2];
-                      total[3] += rgbArray[3];
+              rgbArray = getPixelArray(picture[row-1][column+1]);
+              total[1] += rgbArray[1];
+              total[2] += rgbArray[2];
+              total[3] += rgbArray[3];
 
-                  }
-                  total[1] /= 8;
-                  total[2] /= 8;
-                  total[3] /= 8;
-                  blurredImage[row][column] = getPixels(total);
-              }
+              rgbArray = getPixelArray(picture[row][column-1]);
+              total[1] += rgbArray[1];
+              total[2] += rgbArray[2];
+              total[3] += rgbArray[3];
+
+              rgbArray = getPixelArray(picture[row][column+1]);
+              total[1] += rgbArray[1];
+              total[2] += rgbArray[2];
+              total[3] += rgbArray[3];
+
+              rgbArray = getPixelArray(picture[row+1][column-1]);
+              total[1] += rgbArray[1];
+              total[2] += rgbArray[2];
+              total[3] += rgbArray[3];
+
+              rgbArray = getPixelArray(picture[row+1][column]);
+              total[1] += rgbArray[1];
+              total[2] += rgbArray[2];
+              total[3] += rgbArray[3];
+
+              rgbArray = getPixelArray(picture[row+1][column+1]);
+              total[1] += rgbArray[1];
+              total[2] += rgbArray[2];
+              total[3] += rgbArray[3];
+
+              total[1] /= 8;
+              total[2] /= 8;
+              total[3] /= 8;
+              blurredImage[row][column] = getPixels(total);
           }
       }
       picture = blurredImage;
       resetPicture();
   }
-  
+
+  private int[][] fiveByFiveMask(){
+      int[][] maskedImage = new int[height][width];
+      int[] rgbArray = new int[4];
+      grayscale();
+      for (int row = 2; row < height-2; row++) {
+          for (int column = 2; column < width - 2; column++) {
+              int total = 0;
+              for (int i = -2; i < 2; i+=4) {
+                  for (int j = -2; j < 2; j++) {
+                      rgbArray = getPixelArray(picture[row+i][column+j]);
+                      total += -1 * rgbArray[1];
+                  }
+                  for (int j = 2; j < 3; j++) {
+                      rgbArray = getPixelArray(picture[row+i][column+j]);
+                      total += -1 * rgbArray[1];
+                  }
+              }
+              rgbArray = getPixelArray(picture[row-1][column-2]);
+              total += -1 * rgbArray[1];
+
+              rgbArray = getPixelArray(picture[row][column-2]);
+              total += -1 * rgbArray[1];
+
+              rgbArray = getPixelArray(picture[row+2][column-2]);
+              total += -1 * rgbArray[1];
+
+              rgbArray = getPixelArray(picture[row+1][column-2]);
+              total += -1 * rgbArray[1];
+
+              rgbArray = getPixelArray(picture[row][column]);
+              total += 16 * rgbArray[1];
+
+              if(total > 1500){
+                  rgbArray = getPixelArray(picture[row][column]);
+                  for (int i = 0; i < 4; i++) {
+                      rgbArray[i] = 255;
+                  }
+              }else {
+                  rgbArray[0] = 255;
+                  for (int i = 1; i < 4; i++) {
+                      rgbArray[i] = 0;
+                  }
+              }
+              maskedImage[row][column] = getPixels(rgbArray);
+          }
+      }
+      picture = maskedImage;
+      resetPicture();
+      return maskedImage;
+  }
+
+
+  private void histogram() {
+      int [] red = new int[255];
+      //red array = getHistogram
+
+
+      JFrame hist = new JFrame();
+      hist.setLayout(new BorderLayout(0,0));
+      hist.setSize(900, 300);
+
+      MyPanel redPanel = new MyPanel(red);
+      redPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+      redPanel.setOpaque(true);
+      redPanel.setPreferredSize(new Dimension(300,300));
+      hist.add(redPanel, BorderLayout.WEST);
+
+      hist.setVisible(true);
+  }
+
   private void quit()
   {  
      System.exit(0);
