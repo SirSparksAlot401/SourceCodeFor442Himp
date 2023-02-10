@@ -538,7 +538,6 @@ class IMP implements MouseListener{
 
   private void colorFrequencys(){
       int[] rgbArray;
-      int totalPixels = width * height;
       for (int row = 0; row < height; row++) {
           for (int column = 0; column < width; column++) {
               rgbArray = getPixelArray(picture[row][column]);
@@ -546,97 +545,33 @@ class IMP implements MouseListener{
               green[rgbArray[2]]++;
               blue[rgbArray[3]]++;
 
-              redSum[rgbArray[1]] += (rgbArray[1] * 255 )/(double) totalPixels;
-              greenSum[rgbArray[2]] += (rgbArray[2] * 255 )/(double) totalPixels;
-              blueSum[rgbArray[3]] += (rgbArray[3] * 255) /(double) totalPixels;
           }
       }
   }
   
   private void equalization(){
+      int[] rgbArray;
       colorFrequencys();
       int[][] equalizedImage = new int[height][width];
       int totalPixels = width * height;
-      int[] rgbArray = new int[4];
-      rgbArray[0] = 255;
 
-      double[] red_cdf = new double[256];
-      double[] green_cdf = new double[256];
-      double[] blue_cdf = new double[256];
       int red_sum = 0, green_sum = 0, blue_sum = 0;
-      double maxRed = 0, maxGreen = 0, maxBlue = 0;
-      double minRed = totalPixels, minGreen = totalPixels, minBlue = totalPixels;
-
-      for (int i = 255; i > -1; i--) {
-          red_sum += red[i];
-          green_sum += green[i];
-          blue_sum += blue[i];
-
-          red_cdf[i] = red_sum * 255 / (double) totalPixels;
-          green_cdf[i] = green_sum * 255 / (double) totalPixels;
-          blue_cdf[i] = blue_sum * 255 / (double) totalPixels;
-
-      }
 
       for (int i = 0; i < 256; i++) {
-          if(red_cdf[i] > maxRed){
-              maxRed = redSum[i];
-          }
-          if(green_cdf[i] > maxGreen){
-              maxGreen = greenSum[i];
-          }
-          if(blue_cdf[i] > maxBlue){
-              maxBlue = blueSum[i];
-          }
-          if(red_cdf[i] < minRed){
-              minRed = redSum[i];
-          }
-          if(green_cdf[i] < minGreen){
-              minGreen = greenSum[i];
-          }
-          if(blue_cdf[i] < minBlue){
-              minBlue = blueSum[i];
-          }
+          red[i] = red_sum + red[i];
+          red_sum = red[i];
+          green[i] = green_sum + green[i];
+          green_sum = green[i];
+          blue[i] = blue_sum + blue[i];
+          blue_sum = blue[i];
       }
-
-      for (int i = 0; i < 256; i++) {
-          red_cdf[i] = ((red_cdf[i] - maxRed) / (maxRed - minRed));
-          green_cdf[i] = ((green_cdf[i] - maxGreen) / (maxGreen - minGreen));
-          blue_cdf[i] = ((blue[i] - maxBlue) / (maxBlue - minBlue));
-
-         red_cdf[i] = Math.abs(red_cdf[i]) * 255;
-         green_cdf[i] = Math.abs(green_cdf[i]) * 255;
-         blue_cdf[i] = Math.abs(blue_cdf[i]) * 255;
-      }
-
-      double t;
-      for (int i = 0; i < 256 / 2; i++) {
-          t = red_cdf[i];
-          red_cdf[i] = red_cdf[256 - i - 1];
-          red_cdf[256 - i - 1] = t;
-      }
-
-      for (int i = 0; i < 256 / 2; i++) {
-          t = green_cdf[i];
-          green_cdf[i] = green_cdf[256 - i - 1];
-          green_cdf[256 - i - 1] = t;
-      }
-
-      for (int i = 0; i < 256 / 2; i++) {
-          t = blue_cdf[i];
-          blue_cdf[i] = blue_cdf[256 - i - 1];
-          blue_cdf[256 - i - 1] = t;
-      }
-
-
 
       for (int row = 0; row < height; row++) {
           for (int column = 0; column < width; column++) {
               rgbArray = getPixelArray(picture[row][column]);
-              rgbArray[0] = 255;
-              rgbArray[1] = (int)red_cdf[rgbArray[1]];
-              rgbArray[2] = (int) green_cdf[rgbArray[2]];
-              rgbArray[3] = (int) blue_cdf[rgbArray[3]];
+              rgbArray[1] =  Math.round(((float) red[rgbArray[1]] / (float) totalPixels) * 255);
+              rgbArray[2] = Math.round(((float) green[rgbArray[2]] / (float) totalPixels) * 255);
+              rgbArray[3] = Math.round(((float) blue[rgbArray[3]] / (float) totalPixels) * 255);
               equalizedImage[row][column] = getPixels(rgbArray);
           }
       }
