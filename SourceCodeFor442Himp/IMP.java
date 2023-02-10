@@ -9,7 +9,11 @@ import java.awt.event.*;
 import java.io.File;
 import java.awt.image.PixelGrabber;
 import java.awt.image.MemoryImageSource;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.prefs.Preferences;
+
+import static java.lang.Integer.reverse;
 
 class IMP implements MouseListener{
    JFrame frame;
@@ -32,6 +36,9 @@ class IMP implements MouseListener{
     int [] red = new int[256];
     int [] green = new int[256];
     int [] blue = new int[256];
+    double[] redSum = new double[256];
+    double[] greenSum = new double[256];
+    double[] blueSum = new double[256];
     MyPanel redPanel;
     MyPanel bluePanel;
     MyPanel greenPanel;
@@ -145,6 +152,13 @@ class IMP implements MouseListener{
           public void actionPerformed(ActionEvent evt){histogram();}
       });
 
+      JMenuItem Equalized = new JMenuItem("Equalized");
+
+      Equalized.addActionListener(new ActionListener(){
+          @Override
+          public void actionPerformed(ActionEvent evt){equalization();}
+      });
+
        
       fun.add(firstItem);
       fun.add(Rotate);
@@ -152,6 +166,7 @@ class IMP implements MouseListener{
       fun.add(Blur);
       fun.add(FiveByFive);
       fun.add(Histogram);
+      fun.add(Equalized);
 
       return fun;   
 
@@ -522,19 +537,111 @@ class IMP implements MouseListener{
 
 
   private void colorFrequencys(){
-
-      //red array = getHistogram
-
-
-      int[] rgbArray = new int[4];
+      int[] rgbArray;
+      int totalPixels = width * height;
       for (int row = 0; row < height; row++) {
           for (int column = 0; column < width; column++) {
               rgbArray = getPixelArray(picture[row][column]);
               red[rgbArray[1]]++;
               green[rgbArray[2]]++;
               blue[rgbArray[3]]++;
+
+              redSum[rgbArray[1]] += (rgbArray[1] * 255 )/(double) totalPixels;
+              greenSum[rgbArray[2]] += (rgbArray[2] * 255 )/(double) totalPixels;
+              blueSum[rgbArray[3]] += (rgbArray[3] * 255) /(double) totalPixels;
           }
       }
+  }
+  
+  private void equalization(){
+      colorFrequencys();
+      int[][] equalizedImage = new int[height][width];
+      int totalPixels = width * height;
+      int[] rgbArray = new int[4];
+      rgbArray[0] = 255;
+
+      double[] red_cdf = new double[256];
+      double[] green_cdf = new double[256];
+      double[] blue_cdf = new double[256];
+      int red_sum = 0, green_sum = 0, blue_sum = 0;
+      double maxRed = 0, maxGreen = 0, maxBlue = 0;
+      double minRed = totalPixels, minGreen = totalPixels, minBlue = totalPixels;
+
+      for (int i = 255; i > -1; i--) {
+          red_sum += red[i];
+          green_sum += green[i];
+          blue_sum += blue[i];
+
+          red_cdf[i] = red_sum * 255 / (double) totalPixels;
+          green_cdf[i] = green_sum * 255 / (double) totalPixels;
+          blue_cdf[i] = blue_sum * 255 / (double) totalPixels;
+
+      }
+
+      for (int i = 0; i < 256; i++) {
+          if(red_cdf[i] > maxRed){
+              maxRed = redSum[i];
+          }
+          if(green_cdf[i] > maxGreen){
+              maxGreen = greenSum[i];
+          }
+          if(blue_cdf[i] > maxBlue){
+              maxBlue = blueSum[i];
+          }
+          if(red_cdf[i] < minRed){
+              minRed = redSum[i];
+          }
+          if(green_cdf[i] < minGreen){
+              minGreen = greenSum[i];
+          }
+          if(blue_cdf[i] < minBlue){
+              minBlue = blueSum[i];
+          }
+      }
+
+      for (int i = 0; i < 256; i++) {
+          red_cdf[i] = ((red_cdf[i] - maxRed) / (maxRed - minRed));
+          green_cdf[i] = ((green_cdf[i] - maxGreen) / (maxGreen - minGreen));
+          blue_cdf[i] = ((blue[i] - maxBlue) / (maxBlue - minBlue));
+
+         red_cdf[i] = Math.abs(red_cdf[i]) * 255;
+         green_cdf[i] = Math.abs(green_cdf[i]) * 255;
+         blue_cdf[i] = Math.abs(blue_cdf[i]) * 255;
+      }
+
+      double t;
+      for (int i = 0; i < 256 / 2; i++) {
+          t = red_cdf[i];
+          red_cdf[i] = red_cdf[256 - i - 1];
+          red_cdf[256 - i - 1] = t;
+      }
+
+      for (int i = 0; i < 256 / 2; i++) {
+          t = green_cdf[i];
+          green_cdf[i] = green_cdf[256 - i - 1];
+          green_cdf[256 - i - 1] = t;
+      }
+
+      for (int i = 0; i < 256 / 2; i++) {
+          t = blue_cdf[i];
+          blue_cdf[i] = blue_cdf[256 - i - 1];
+          blue_cdf[256 - i - 1] = t;
+      }
+
+
+
+      for (int row = 0; row < height; row++) {
+          for (int column = 0; column < width; column++) {
+              rgbArray = getPixelArray(picture[row][column]);
+              rgbArray[0] = 255;
+              rgbArray[1] = (int)red_cdf[rgbArray[1]];
+              rgbArray[2] = (int) green_cdf[rgbArray[2]];
+              rgbArray[3] = (int) blue_cdf[rgbArray[3]];
+              equalizedImage[row][column] = getPixels(rgbArray);
+          }
+      }
+      picture = equalizedImage;
+      resetPicture();
   }
 
   private void quit()
